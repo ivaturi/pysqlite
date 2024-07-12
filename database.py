@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 
-import sqlite3 as sql
 import argparse as argp
+from db_worker import Database
 
 parser = argp.ArgumentParser(description="Database helper")
 
@@ -12,33 +12,22 @@ parser.add_argument('--list-tables', action='store_true', help='List all tables 
 # parse incoming arguments to the script
 args = parser.parse_args()
 
+db = Database('database.db')
 
-db = 'database.db'
 
 if args.create:
     tablename = args.create
     print(f"Creating table <{tablename}>")
-    try:
-        conn = sql.connect(db)
-        cur  = conn.cursor()
-        print(f"Trying to create table with name: {tablename}")
-        conn = sql.connect(db)
-        create_query = """CREATE TABLE {} ( name text, phone text, email text)""".format(tablename)
-        cur.execute(create_query)
-        conn.commit()
-        conn.close()
-
-    except Exception as e:
-        print(f"Failed to create: {e}")
+    db.create_table(tablename)
+  
 elif args.list_tables:
-    conn = sql.connect(db)
-    cur = conn.cursor()
-    cur.execute("SELECT name FROM sqlite_master WHERE type='table';")
-    tables = cur.fetchall()
-    conn.close()
+    tables = db.get_tables()
     if tables:
-        print(f"Found these tables in the database ({db})")
+        print(f"Found these tables...")
         for table in tables:
             print(" > " + table[0])
     else:
-        print(f"Found no tables in the database ({db})")
+        print(f"Found no tables")
+
+
+
